@@ -50,12 +50,12 @@ static char* readFile(const char* path){
         exit(74);
     }
     size_t bytesRead=fread(buffer,sizeof(char),fileSize,file);
-    buffer[bytesRead]='\0';
+    
     if(bytesRead<fileSize){
         fprintf(stderr,"could not read the whole file \"%s\".\n",path);
         exit(74);
     }
-
+    buffer[bytesRead]='\0';
 
 }
 
