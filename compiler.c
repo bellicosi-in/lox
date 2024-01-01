@@ -121,3 +121,37 @@ static void number(){
     emitConstant(value);
 }
 
+static void unary(){
+    TokenType operatorType=parser.previous.type;
+
+    //compile the operand
+    parsePrecedence(PREC_UNARY);
+
+    switch(operatorType){
+        case TOKEN_MINUS: emitByte(OP_NEGATE);break;
+        default: 
+            return; //unreachable.
+    }
+}
+
+static void parsePrecedence(Precedence precedence){
+
+}
+
+static void expression(){
+    parsePrecedence(PREC_ASSIGNMENT);
+}
+
+bool compile(const char* source,Chunk* chunk){
+    
+    initScanner(source);
+    compilingChunk=chunk;
+
+    parser.hadError=false;
+    parser.panicMode=false;
+    advance();
+    expression();
+    consume(TOKEN_EOF,"Expect end of expression");
+    endCompiler();
+    return !parser.hadError;
+}
