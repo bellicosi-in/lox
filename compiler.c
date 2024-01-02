@@ -10,6 +10,9 @@ typedef struct{
     bool panicMode;
 }Parser;
 
+//parsing using the pratt precedence parser. 
+
+
 typedef enum {
     PREC_NONE,
     PREC_ASSIGNMENT, //=
@@ -138,6 +141,7 @@ static void parsePrecedence(Precedence precedence){
 
 }
 
+//the main expression
 static void expression(){
     parsePrecedence(PREC_ASSIGNMENT);
 }
