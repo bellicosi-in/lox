@@ -57,6 +57,7 @@ static char* readFile(const char* path){
     }
     buffer[bytesRead]='\0';
 
+
 }
 
 

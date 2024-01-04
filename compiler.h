@@ -1,9 +1,10 @@
 #ifndef clox_compiler_h
 #define clox_compiler_h
 
-#include "vm.h"
+#include "chunk.h"
+#include "common.h"
 
-bool compile(const char* source,Chunk* chunk);
+bool compile(const char* source, Chunk* chunk);
 
 
 #endif
