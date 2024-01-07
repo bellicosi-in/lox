@@ -1,0 +1,10 @@
+//variable declaration
+Variable declaration parsing begins in varDeclaration() 
+and relies on a couple of other functions. 
+First, parseVariable() consumes the identifier token for the variable name,
+adds its lexeme to the chunk’s constant table as a string, and
+then returns the constant table index where it was added. 
+Then, after varDeclaration() compiles the initializer, 
+it calls defineVariable() to emit the bytecode for storing the variable’s value in the global variable hash table.
+
+“Declaring” is when the variable is added to the scope, and “defining” is when it becomes available for use.
