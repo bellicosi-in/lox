@@ -4,6 +4,8 @@
 #include "chunk.h"
 #include "common.h"
 #include "value.h"
+#include "table.h"
+
 #define STACK_MAX 256
 
 typedef struct{
@@ -11,8 +13,10 @@ typedef struct{
     uint8_t* ip;
     Value stack[STACK_MAX];
     Value* stackTop;
+    Table globals;
+    Table strings;
     Obj* objects;
-
+    
 }VM;
 extern VM vm;
 
