@@ -2,6 +2,7 @@
 
 #define clox_scanner_h
 
+#include <string.h>
 
 typedef enum{
     //single character tokens

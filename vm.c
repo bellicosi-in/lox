@@ -51,7 +51,7 @@ void push(Value value){
 }
 
 Value pop(){
-    *vm.stackTop--;
+    vm.stackTop--;
     return *vm.stackTop;
 }
 

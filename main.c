@@ -61,8 +61,6 @@ static void runFile(const char* path){
 
 
 
-
-
 int main(int argc, char* argv[]){
     initVM();
     
@@ -76,20 +74,6 @@ int main(int argc, char* argv[]){
         exit(64);
     }
     
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
     
     freeVM();
     

@@ -11,6 +11,10 @@ static bool isAlpha(char c){
     return (c>='a' && c<='z') || (c>='A' && c<='Z') || c=='_';
 }
 
+static bool isDigit(char c){
+    return c>='0'&& c<='9';
+}
+
 
 static bool isAtEnd(){
     return *scanner.current=='\0';
@@ -78,7 +82,7 @@ static void skipWhitespace(){
                 break;
             case '/':
                 if(peekNext()=='/'){
-                    while(peek()!='/n' && !isAtEnd()) advance();
+                    while(peek() != '\n' && !isAtEnd()) advance();
                 }else{
                     return;
                 }
@@ -169,9 +173,6 @@ static Token string(){
 
 
 
-static bool isDigit(char c){
-    return c>='0'&& c<='9';
-}
 
 Token scanToken(){
     scanner.start=scanner.current;

@@ -61,81 +61,6 @@ static Chunk* currentChunk(){
 }
 
 
-static void expression();
-static void statement();
-static void declaration();
-static ParseRule* getRule(TokenType type);
-static void parsePrecedence(Precedence precedence);
-
-static uint8_t parseVariable(const char* errorMessage){
-    consume(TOKEN_IDENTIFIER,errorMessage);
-
-    declareVariable();
-    if(current->scopeDepth > 0) return 0;
-
-    return identifierConstant(&parser.previous);
-}
-
-static void markInitialized(){
-    current->locals[current->localCount-1].depth = current->scopeDepth;
-}
-
-static void defineVariable(uint8_t global){
-    if(current->scopeDepth > 0){
-        markInitialized();
-        return;
-    }
-
-    emitBytes(OP_DEFINE_GLOBAL,global);
-}
-
-static uint8_t identifierConstant(Token* name){
-    return makeConstant(OBJ_VAL(copyString(name->start,name->length)));
-}
-
-static bool identifiersEqual(Token* a, Token* b){
-    if(a->length != b->length) return false;
-    return memcmp(a->start,b->start,a->length)==0;
-}
-
-static int resolveLocal(Compiler* compiler, Token* name){
-    for(int i=compiler->localCount-1; i>=0; i--){
-        Local* local= &compiler->locals[i];
-        if(identifiersEqual(name,&local->name)){
-            if(local->depth == -1){
-                error("Can't read local variable in its own initializer");
-            }
-            return i;
-        }
-    }
-    return -1;
-}
-
-static void addLocal(Token name){
-    if(current->localCount == UINT8_COUNT){
-        error("Too many local variables in function");
-        return;
-    }
-
-    Local* local = &current->locals[current->localCount++];
-    local->name=name;
-    local->depth=-1;
-}
-
-static void declareVariable(){
-    if(current->scopeDepth == 0)return;
-    Token* name = &parser.previous;
-    for(int i= current->localCount-1; i >= 0; i--){
-        Local* local = &current->locals[i];
-        if(local->depth != -1 && local->depth < current->scopeDepth){
-            break;
-        }
-        if(identifiersEqual(name,&local->name)){
-            error("already a variable with this name is in the scope");
-        }
-    }
-    addLocal(*name);
-}
 
 static void errorAt(Token* token, const char* message){
     if(parser.panicMode) return;
@@ -162,6 +87,7 @@ static void error(const char* message){
 static void errorAtCurrent(const char* message){
     errorAt(&parser.current,message);
 }
+
 
 static void advance(){
     parser.previous = parser.current;
@@ -195,7 +121,7 @@ static bool match(TokenType type){
 
 //code gen functions
 static void emitByte(uint8_t byte){
-    writeChunk(currenthunk(),byte, parser.previous.line);
+    writeChunk(currentChunk(),byte, parser.previous.line);
 }
 
 static void emitBytes(uint8_t byte1, uint8_t byte2){
@@ -205,6 +131,128 @@ static void emitBytes(uint8_t byte1, uint8_t byte2){
 
 static void emitReturn(){
     emitByte(OP_RETURN);
+}
+
+static uint8_t makeConstant(Value value){
+    int constant = addConstant(currentChunk(),value);
+    if(constant>UINT8_MAX){
+        error("Too many constants in one chunk");
+        return 0;
+    }
+    return (uint8_t)constant;
+
+}
+
+static void emitConstant(Value value){
+    emitBytes(OP_CONSTANT,makeConstant(value));
+}
+
+static void initCompiler(Compiler* compiler){
+    compiler->localCount = 0;
+    compiler->scopeDepth = 0;
+    current = compiler;
+}
+
+
+static void endCompiler(){
+    emitReturn();
+#ifdef DEBUG_PRINT_CODE
+    if(!parser.hadError){
+        disassembleChunk(currentChunk(),"code");
+    }
+#endif
+}
+
+static void beginScope(){
+    current->scopeDepth++;
+}
+
+static void endScope(){
+    current->scopeDepth--;
+
+    while(current->localCount > 0 && current->locals[current->localCount - 1].depth > current->scopeDepth){
+        emitByte(OP_POP);
+        current->localCount--;
+    }
+}
+
+
+static void expression();
+static void statement();
+static void declaration();
+static ParseRule* getRule(TokenType type);
+static void parsePrecedence(Precedence precedence);
+
+static uint8_t identifierConstant(Token* name){
+    return makeConstant(OBJ_VAL(copyString(name->start,name->length)));
+}
+
+
+static bool identifiersEqual(Token* a, Token* b){
+    if(a->length != b->length) return false;
+    return memcmp(a->start,b->start,a->length)==0;
+}
+
+static int resolveLocal(Compiler* compiler, Token* name){
+    for(int i=compiler->localCount-1; i>=0; i--){
+        Local* local= &compiler->locals[i];
+        if(identifiersEqual(name,&local->name)){
+            if(local->depth == -1){
+                error("Can't read local variable in its own");
+            }
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void addLocal(Token name){
+    if(current->localCount == UINT8_COUNT){
+        error("Too many local variables in function");
+        return;
+    }
+
+    Local* local = &current->locals[current->localCount++];
+    local->name=name;
+    local->depth=-1;
+}
+
+static void declareVariable(){
+    if(current->scopeDepth == 0)return;
+    Token* name = &parser.previous;
+    for(int i= current->localCount-1; i >= 0; i--){
+        Local* local = &current->locals[i];
+        if(local->depth != -1 && local->depth < current->scopeDepth){
+            break;
+        }
+        if(identifiersEqual(name,&local->name)){
+            error("already a variable with this name is in the scope");
+        }
+    }
+    addLocal(*name);
+}
+
+static uint8_t parseVariable(const char* errorMessage){
+    consume(TOKEN_IDENTIFIER,errorMessage);
+
+    declareVariable();
+    if(current->scopeDepth > 0) return 0;
+
+    return identifierConstant(&parser.previous);
+}
+
+static void markInitialized(){
+    current->locals[current->localCount-1].depth = current->scopeDepth;
+}
+
+
+static void defineVariable(uint8_t global){
+    if(current->scopeDepth > 0){
+        markInitialized();
+        return;
+    }
+
+    emitBytes(OP_DEFINE_GLOBAL,global);
 }
 
 //dealing with infix operators
@@ -237,54 +285,10 @@ static void literal(bool canAssign){
     }
 }
 
-
-
-static void endCompiler(){
-    emitReturn();
-#ifdef DEBUG_PRINT_CODE
-    if(!parser.hadError){
-        disassembleChunk(currentChunk(),"code");
-    }
-#endif
-}
-
-static void beginScope(){
-    current->scopeDepth++;
-}
-
-static void endScope(){
-    current->scopeDepth--;
-
-    while(current->localCount > 0 && current->locals[current->localCount - 1].depth > current->scopeDepth){
-        emitByte(OP_POP);
-        current->localCount--;
-    }
-}
-
-
 //parantheses for grouping
-static void grouping(bool canAssign){}
-
-
-//parsing numbers
-static uint8_t makeConstant(Value value){
-    int constant = addConstant(currentChunk(),value);
-    if(constant>UINT8_MAX){
-        error("Too many constants in one chunk");
-        return 0;
-    }
-    return (uint8_t)constant;
-
-}
-
-static void emitConstant(Value value){
-    emitBytes(OP_CONSTANT,makeConstant(value));
-}
-
-static void initCompiler(Compiler* compiler){
-    compiler->localCount = 0;
-    compiler->scopeDepth = 0;
-    current = compiler;
+static void grouping(bool canAssign) {
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
 static void number(bool canAssign){
@@ -338,9 +342,6 @@ static void unary(bool canAssign){
     }
 }
 
-
-
-
 //array of parse rules
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN]    = {grouping, NULL,   PREC_NONE},
@@ -386,8 +387,6 @@ ParseRule rules[] = {
 };
 
 
-
-
 static void parsePrecedence(Precedence precedence){
     advance();
     ParseFn prefixRule = getRule(parser.previous.type)->prefix;
@@ -408,11 +407,10 @@ static void parsePrecedence(Precedence precedence){
     }
 }
 
-
-
 static ParseRule* getRule(TokenType type){
     return &rules[type];
 }
+
 
 static void expression(){
     parsePrecedence(PREC_ASSIGNMENT);
@@ -425,6 +423,7 @@ static void block(){
     }
     consume(TOKEN_RIGHT_BRACE,"Expect '}' after block.");
 }
+
 
 static void varDeclaration(){
     uint8_t global = parseVariable(" Expect variable name.");
@@ -446,6 +445,7 @@ static void expressionStatement(){
     consume(TOKEN_SEMICOLON,"Expect ';' after expression");
     emitByte(OP_POP);
 }
+
 
 static void printStatement(){
     expression();
@@ -504,6 +504,8 @@ static void statement(){
         expressionStatement();
     }
 }
+
+
 
 bool compile(const char* source,Chunk* chunk){
 
