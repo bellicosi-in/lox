@@ -3,9 +3,13 @@
 #include <string.h>
 #include "compiler.h"
 #include "scanner.h"
-#include "debug.h"
+
 #include <stdio.h>
 
+
+#ifdef DEBUG_PRINT_CODE
+#include "debug.h"
+#endif
 //building the parsing part of the compiler
 
 
@@ -312,7 +316,6 @@ static void namedVariable(Token name,bool canAssign){
         setOp = OP_SET_GLOBAL;
     }
     if(canAssign && match(TOKEN_EQUAL)){
-    statement();
         expression();
         emitBytes(setOp,(uint8_t)arg);
 
@@ -512,6 +515,7 @@ bool compile(const char* source,Chunk* chunk){
     initScanner(source);
     Compiler compiler;
     initCompiler(&compiler);
+    compilingChunk=chunk;
     parser.hadError = false;
     parser.panicMode = false;
     advance();

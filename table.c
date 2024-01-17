@@ -116,7 +116,7 @@ void tableAddAll(Table* from, Table* to) {
 ObjString* tableFindString(Table* table,const char* chars,int length,uint32_t hash){
     if(table->count==0) return NULL;
 
-    uint32_t index = hash%table->capacity;
+    uint32_t index = hash % table->capacity;
     for(;;){
         Entry* entry = &table->entries[index];
         if(entry->key==NULL){
