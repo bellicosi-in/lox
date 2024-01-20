@@ -8,3 +8,10 @@ Then, after varDeclaration() compiles the initializer,
 it calls defineVariable() to emit the bytecode for storing the variable’s value in the global variable hash table.
 
 “Declaring” is when the variable is added to the scope, and “defining” is when it becomes available for use.
+
+
+NOTES:
+CHUNKS OF BYTECODE:
+1. To use the cache effectively , the way we represent code in memory should be dense and ordered like its read.
+2. writing in bytecode means that we are ensuring portability as well as fast. vm is a simulated chip written in software that interprets the 
+bytecode one instruction at a time. 

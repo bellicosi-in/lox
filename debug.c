@@ -1,18 +1,29 @@
 #include <stdio.h>
+
 #include "debug.h"
 
 
+/* to disassemble all of the instructions in the entire chunk. this fucntion calls a function disassembleInstruction, 
+which disassembles a single instruction.*/
+
 void disassembleChunk(Chunk* chunk,const char* name){
+
+    /*header to tell which chunk we're looking at.*/
+
     printf("====%s====\n",name);
     for(int offset=0;offset<chunk->count;){
         offset=disassembleInstruction(chunk,offset);
     }
 }
 
+/* prints the name of the opcode and returns the offset.*/
+
 static int simpleInstruction(const char* name,int offset){
     printf("%s\n",name);
     return offset+1;
 }
+
+
 static int byteInstruction(const char* name, Chunk* chunk,
                            int offset) {
   uint8_t slot = chunk->code[offset + 1];
@@ -20,6 +31,7 @@ static int byteInstruction(const char* name, Chunk* chunk,
   return offset + 2; 
 }
 
+/* this is to debug the OP_CONSTANT instruction. as we also need to print the constant value associated with it.*/
 
 static int constantInstruction(const char* name,Chunk* chunk,int offset){
     uint8_t constant=chunk->code[offset+1];
@@ -31,6 +43,9 @@ static int constantInstruction(const char* name,Chunk* chunk,int offset){
 
 }
 
+
+
+/* it prints the byte offset first to tell us where we are in the chunk. it reads a single byte from the bytecode at the given offset.*/
 int disassembleInstruction(Chunk* chunk,int offset){
     printf("%04d\t",offset);
     if(offset>0 && chunk->lines[offset]==chunk->lines[offset-1]){

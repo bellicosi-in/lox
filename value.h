@@ -14,6 +14,7 @@ typedef enum{
 }ValueType;
 
 //to store the double value so that we can change the type depending on the requirements without needing to change it everywhere.
+/* Each chunk will carry with it a list of the values that appear as literals in the program. */
 typedef struct{
     ValueType type;
     union{

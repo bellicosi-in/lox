@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "vm.h"
 
+// this is the function that basically handles all the dynamic memory management in clox. it basically is the backend for the memory reallocation.
 void* reallocate(void* pointer,size_t oldSize, size_t newSize){
     if(newSize==0){
         free(pointer);

@@ -3,6 +3,9 @@
 #include "common.h"
 #include "value.h"
 
+// All the opcodes are defined here - each isnstruction has one byte operand.
+// each opcode determines how many bytes it has and what they mean. A simple operation like return may have no operands.  each time
+// a new opcode is added to clox, its instruction format needs to be specified. 
 
 typedef enum{
     OP_CONSTANT,
@@ -29,6 +32,8 @@ typedef enum{
 }OpCode;
 
 
+// we need to store data along with the instructions - this is what the struct is for. along with the OP CODE, there are other data associated with it
+// which will be dynamic, hence the use of dynamic arrays.
 typedef struct{
     int count;
     int capacity;

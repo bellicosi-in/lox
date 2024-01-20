@@ -2,6 +2,9 @@
 
 #define clox_common_h
 
+
+//  All the major libraries that are required are added here. makes this as a common import file.
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>

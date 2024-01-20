@@ -1,6 +1,11 @@
 #include "chunk.h"
 #include "memory.h"
 
+
+/* Initialize the new chunk. the dynamic array starts off completely empty.*/
+
+/* for the line number, we store a separate array of integers that parallels the btyecode. when a runtime error occurs,
+we look up the line number at the same index as the current instruction's offset in the code array.*/
 void initChunk(Chunk* chunk){
     chunk->count=0;
     chunk->capacity=0;
@@ -10,7 +15,7 @@ void initChunk(Chunk* chunk){
 }
 
 
-
+/* to write to the chunk. If the space allocated for it through malloc doesn't fit, we can also expand the array. basically updating the chunk*/
 void writeChunk(Chunk* chunk,uint8_t byte,int line){
     if(chunk->capacity<chunk->count+1){
         int oldCapacity = chunk->capacity;
@@ -25,6 +30,7 @@ void writeChunk(Chunk* chunk,uint8_t byte,int line){
 }
 
 //adding the constant value to the constant pool of the array and returning the index
+// when the VM loads the OP_CONSTANT instruction, it also loads the constant for use. 
 int addConstant(Chunk* chunk,Value value){
     writeValueArray(&chunk->constants,value);
     return chunk->constants.count-1;

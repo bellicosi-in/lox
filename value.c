@@ -32,6 +32,7 @@ void freeValueArray(ValueArray* array){
 }
 
 
+/* in debugging, this is to print the value Value .*/
 void printValue(Value value){
     switch (value.type) {
     case VAL_BOOL:
