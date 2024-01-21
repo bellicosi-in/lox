@@ -1,5 +1,20 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "scanner.h"
 #include "common.h"
+
+
+// the start pointer marks the beginning of the current lexeme being scanned and current pointer points to the current character, being looked at.
+typedef struct{
+    const char* start;
+    const char* current;
+
+    //line field to track what the current lexeme is on for error reporting.
+    int line;
+}Scanner;
+
+Scanner scanner;
 
 void initScanner(const char* source){
     scanner.start=source;
@@ -16,21 +31,26 @@ static bool isDigit(char c){
 }
 
 
+// to detect the end of the file 
 static bool isAtEnd(){
     return *scanner.current=='\0';
 }
 
 
+
+//helper fucnction to consume the current character and return it. 
 char advance(){
     scanner.current++;
     return scanner.current[-1];
 }
 
+
+//returns the current character without consuming it. 
 static char peek(){
     return *scanner.current;
 }
 
-
+// to look at the next token to figure out if it has another /.
 static char peekNext(){
     if(isAtEnd()) return '\0';
     return scanner.current[1];
@@ -38,7 +58,7 @@ static char peekNext(){
 }
 
 
-
+// to match characters like != and ==, we use this helper function
 static bool match(char expected){
     if(isAtEnd()) return false;
     if(*scanner.current!=expected) return false;
@@ -47,6 +67,8 @@ static bool match(char expected){
 
 }
 
+
+//to make the token..this is the constructor function that we are using. uses the scanner's current and start to detect the lexeme
 static Token makeToken(TokenType type){
     Token token;
     token.type=type;
@@ -56,7 +78,7 @@ static Token makeToken(TokenType type){
     return token;
 }
 
-
+//sister function to makeToken 
 static Token errorToken(const char* message){
     Token token;
     token.type=TOKEN_ERROR;
@@ -67,6 +89,8 @@ static Token errorToken(const char* message){
 }
 
 
+
+// this is designed to skip past any white space characters and loops through the tokens until it encoutners a non white space characters.
 static void skipWhitespace(){
     for(;;){
         char c=peek();
@@ -76,6 +100,8 @@ static void skipWhitespace(){
             case '\r':
                 advance();
                 break;
+            
+            //advances to the next line. updates the scanner's line field.
             case '\n':
                 scanner.line++;
                 advance();
@@ -148,6 +174,8 @@ static Token identifier(){
     return makeToken(identifierType());
 }
 
+//to make the number tokens..we also deal with decimal numbers.
+
 static Token number(){
     while(isDigit(peek())) advance();
 
@@ -160,7 +188,7 @@ static Token number(){
     return makeToken(TOKEN_NUMBER);
 }
 
-
+// to deal with the string tokens, we keep consuming it until we encounter another """.
 static Token string(){
     while(peek()!='"' && !isAtEnd()){
         if(peek()=='\n') scanner.line++;
@@ -172,12 +200,14 @@ static Token string(){
 }
 
 
-
+//each call scans and returns the next token in the source code.
 
 Token scanToken(){
     scanner.start=scanner.current;
     skipWhitespace();
     if(isAtEnd()) return makeToken(TOKEN_EOF);
+
+    //to recognise single character tokens.
     char c=advance();
     if(isAlpha(c)) return identifier();
     if(isDigit(c)) return number();

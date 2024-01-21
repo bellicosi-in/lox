@@ -14,4 +14,16 @@ NOTES:
 CHUNKS OF BYTECODE:
 1. To use the cache effectively , the way we represent code in memory should be dense and ordered like its read.
 2. writing in bytecode means that we are ensuring portability as well as fast. vm is a simulated chip written in software that interprets the 
-bytecode one instruction at a time. 
+bytecode one instruction at a time.
+
+
+A VIRTUAL MACHINE
+1. This is the backend. it executes the instructions. you hand it a chunk of code and it  literally runs it.
+2. VM detects runtime errors and compiler detects the static errors. 
+3. each turn through the loop in run we execute a sinlge bytecode instruction.
+
+
+SCANNING ON DEMAND:
+1. clox has three phases : a scanner, a compiler and a virtual machine.
+2. tokens flow from scanner to compiler and chunks of bytecode from compiler to vm. 
+3.the compiler initializes the scanner. 

@@ -9,7 +9,12 @@
 #include "compiler.h"
 
 
+/* We declare a single global variable to avoid the chore of passing aroung a pointer to it.*/
+/* when you run clox, it starts up the VM before it creates that hand authored chunk from the last chapter.*/
+
 VM vm;
+
+
 
 void resetStack(){
     vm.stackTop=vm.stack;
@@ -80,7 +85,11 @@ static void concatenate(){
 }
 
 static InterpretResult run(){
+
+  /* each turn through the loop in run we execute a sinlge bytecode instruction. */
 #define READ_BYTE() (*vm.ip++)
+
+/* reads the next byte from the bytecode abd treats the resulting number as an index and looks up the corresponding value in the chunk's constant table.*/
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 #define BINARY_OP(valueType,op) do{ \
@@ -94,7 +103,17 @@ static InterpretResult run(){
                         }while(false)
     for(;;){
 #ifdef DEBUG_TRACE_EXECUTION
+
+
+/* this disassembles instructions dynamically on the fly. 
+When you subtract vm.chunk->code from vm.ip, what you're calculating is the number of bytes
+ between the start of the bytecode array and the current instruction. 
+ This difference gives the offset of the current instruction within the bytecode.*/
+
+
         disassembleInstruction(vm.chunk,(int)(vm.ip-vm.chunk->code));
+
+        /*stack tracing*/
         printf("    ");
         for(Value* slot=vm.stack;slot<vm.stackTop;slot++){
             printf("[  ");
@@ -104,6 +123,9 @@ static InterpretResult run(){
         printf("\n");
 #endif
         uint8_t instruction;
+
+        //given an OPCODE , we need to get to the right C code that implements the semantics for that particular bytecode(OPCODE).
+        //This process is called decoding or dispatching the information.
         
         switch(instruction=READ_BYTE()){
             case OP_CONSTANT:{
@@ -225,7 +247,7 @@ static InterpretResult run(){
 #undef BINARY_OP
 }
 
-
+/* this is the main entrypoint into vm. the VM springs into action when we command it to interpret a chunk of bytecode. */
 InterpretResult interpret(const char* source){
     Chunk chunk;
     initChunk(&chunk);

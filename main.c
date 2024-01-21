@@ -49,6 +49,9 @@ static char* readFile(const char* path){
 
 }
 
+
+/* read the file and execute the resulting string of lox source code.*/
+
 static void runFile(const char* path){
     char* source= readFile(path);
     InterpretResult result=interpret(source);
