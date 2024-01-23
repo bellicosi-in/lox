@@ -27,6 +27,8 @@ static char* readFile(const char* path){
         exit(74);
 
     }
+
+    //to tell the size of the file.
     fseek(file,0L,SEEK_END);
     size_t fileSize=ftell(file);
     rewind(file);

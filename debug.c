@@ -31,6 +31,13 @@ static int byteInstruction(const char* name, Chunk* chunk,
   return offset + 2; 
 }
 
+static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset){
+    uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+    jump |= chunk->code[offset + 2];
+    printf("%-16s %4d -> %d\n",name,offset,offset+3+sign*jump);
+    return offset+3;
+}
+
 /* this is to debug the OP_CONSTANT instruction. as we also need to print the constant value associated with it.*/
 
 static int constantInstruction(const char* name,Chunk* chunk,int offset){
@@ -97,6 +104,12 @@ int disassembleInstruction(Chunk* chunk,int offset){
         
         case OP_PRINT:
             return simpleInstruction("OP_PRINT",offset);
+        
+        case OP_JUMP:
+            return jumpInstruction("OP_JUMP", 1,chunk, offset);
+        
+        case OP_JUMP_IF_FALSE:
+            return jumpInstruction("OP_JUMP_IF_FALSE",1,chunk,offset);
         
         case OP_RETURN:
             return simpleInstruction("OP_RETURN",offset);

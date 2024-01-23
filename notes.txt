@@ -27,3 +27,9 @@ SCANNING ON DEMAND:
 1. clox has three phases : a scanner, a compiler and a virtual machine.
 2. tokens flow from scanner to compiler and chunks of bytecode from compiler to vm. 
 3.the compiler initializes the scanner. 
+
+
+JUMPING BACK AND FORTH
+1.by flow we mena the way execution moves through the text of the program.
+2. the VM's ip field stores the address of the current bytecode instruction. the value of that field is exactly "where we are " in the program.
+3. to skip over a chunk of code, we simply set the ip field to the address of the bytecode instructions following that code. 
