@@ -124,6 +124,7 @@ static void skipWhitespace(){
     }
 }
 
+/* this checks if the reserved keyword matches character for character*/
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type){
     if(scanner.current-scanner.start==start+length && memcmp(scanner.start+start,rest,length)==0){
         return type;
@@ -132,7 +133,7 @@ static TokenType checkKeyword(int start, int length, const char* rest, TokenType
     return TOKEN_IDENTIFIER;
 }
 
-
+/* to make an identifer, we first check if its aprt of a reserved keyword. for that we go through the following cases.*/
 static TokenType identifierType(){
     switch(scanner.start[0]){
         case 'a': return checkKeyword(1,2,"nd",TOKEN_AND);
@@ -169,6 +170,7 @@ static TokenType identifierType(){
     return TOKEN_IDENTIFIER;
 }
 
+// to identify the identifiers and kehywords.
 static Token identifier(){
     while(isAlpha(peek()) || isDigit(peek())) advance();
     return makeToken(identifierType());

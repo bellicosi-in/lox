@@ -555,7 +555,7 @@ static void statement(){
 
 
 bool compile(const char* source,Chunk* chunk){
-
+    /* the first phase of compilation is scanning, so we are setting that up.*/
     initScanner(source);
     Compiler compiler;
     initCompiler(&compiler);

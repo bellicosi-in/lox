@@ -15,19 +15,28 @@ CHUNKS OF BYTECODE:
 1. To use the cache effectively , the way we represent code in memory should be dense and ordered like its read.
 2. writing in bytecode means that we are ensuring portability as well as fast. vm is a simulated chip written in software that interprets the 
 bytecode one instruction at a time.
+3. each chunk will carry with it a list of the values that appear as literals in the program. To keep things simpler, we'll put all constants in there, even simple integers.
 
 
 A VIRTUAL MACHINE
 1. This is the backend. it executes the instructions. you hand it a chunk of code and it  literally runs it.
 2. VM detects runtime errors and compiler detects the static errors. 
 3. each turn through the loop in run we execute a sinlge bytecode instruction.
-
+4. the ip tracks the bytecode through the chunk thats passed to the vm. ip always points to the instruction about to be executed.
+5. in the VM the code goes through Interpret to run() where the major function is happening.  we also disassemble the instructions.
+6. this is the stack based vm. but there is another vm which is the register based vm. in this the local variables live on the stack.
 
 SCANNING ON DEMAND:
 1. clox has three phases : a scanner, a compiler and a virtual machine.
 2. tokens flow from scanner to compiler and chunks of bytecode from compiler to vm. 
 3.the compiler initializes the scanner. 
+4.the pipeline to scan, compile and execute is driven by interpret(). 
+5. define scanToken(). then use the scanner to makeToken.
+6. to identify reserved keywords, we use trie. each string trie contains is represented as a path through the tree of character nodes, as in our traversal above. 
+7. this is the phase of lexical analysis.
+8. for more info on state machines : craftinginterpreters.com/state
 
+COMPILING EXPRESSIONS
 
 JUMPING BACK AND FORTH
 1.by flow we mena the way execution moves through the text of the program.

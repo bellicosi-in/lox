@@ -259,7 +259,8 @@ When you subtract vm.chunk->code from vm.ip, what you're calculating is the numb
 #undef BINARY_OP
 }
 
-/* this is the main entrypoint into vm. the VM springs into action when we command it to interpret a chunk of bytecode. */
+/* this is the main entrypoint into vm. the VM springs into action when we command it to interpret a chunk of bytecode. we pass in the string of source code.*/
+
 InterpretResult interpret(const char* source){
     Chunk chunk;
     initChunk(&chunk);

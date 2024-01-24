@@ -6,6 +6,8 @@
 /* to disassemble all of the instructions in the entire chunk. this fucntion calls a function disassembleInstruction, 
 which disassembles a single instruction.*/
 
+/* after disassembling the instruction at the given offset, it returns the offset of the next instruction.*/
+
 void disassembleChunk(Chunk* chunk,const char* name){
 
     /*header to tell which chunk we're looking at.*/
