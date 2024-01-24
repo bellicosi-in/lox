@@ -29,13 +29,6 @@ typedef enum{
     TOKEN_ERROR,TOKEN_EOF
 }TokenType;
 
-typedef struct{
-    const char* start;
-    const char* current;
-    int line;
-}Scanner;
-
-Scanner scanner;
 
 typedef struct{
     TokenType type;

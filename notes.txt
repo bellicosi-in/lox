@@ -37,6 +37,15 @@ SCANNING ON DEMAND:
 8. for more info on state machines : craftinginterpreters.com/state
 
 COMPILING EXPRESSIONS
+1. A compiler has roughly two jobs : it parses the user's source code to understand what it means(semantic analysis) and then it takes that knowledge and outputs low level instructions
+that produce the same semantics.
+2. in this we will build the parsing and code generation first and then stitch them together with the code in the middle that uses Pratt's technique to parse lox's particular grammar,
+and output the right bytecode.
+3. front half of the compiler - define the advance function that goes to the next valid token and handles errors.
+4. after we parse and understand a piece of the user's program, the next step is to translate that to a series of btyecode instructions.
+5.we are defining relevant functions to deal with each type of token that we get after being parsed.
+6.expressions that start with a particular expression are called prefix expressions.
+7.binary operators are infix expressions.
 
 JUMPING BACK AND FORTH
 1.by flow we mena the way execution moves through the text of the program.

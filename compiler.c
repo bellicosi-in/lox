@@ -4,12 +4,13 @@
 #include "compiler.h"
 #include "scanner.h"
 
-#include <stdio.h>
 
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
 #endif
+
+
 //building the parsing part of the compiler
 
 
@@ -37,8 +38,12 @@ typedef enum {
     PREC_PRIMARY
 } Precedence;
 
+
+//the function takes the bool argument but returns nothing.
 typedef void (*ParseFn)(bool canAssign);
 
+
+//struct for the parser table.
 typedef struct{
     ParseFn prefix;
     ParseFn infix;
@@ -65,7 +70,7 @@ static Chunk* currentChunk(){
 }
 
 
-
+//this is the major function that handles the error
 static void errorAt(Token* token, const char* message){
     if(parser.panicMode) return;
     parser.panicMode=true;
@@ -81,18 +86,18 @@ static void errorAt(Token* token, const char* message){
     parser.hadError=true;
 }
 
-
+//this is called when the error is pertaining to the previous token.
 static void error(const char* message){
     errorAt(&parser.previous,message);
 }
 
 
-
+//this is called when the error is pertaining to the current token.
 static void errorAtCurrent(const char* message){
     errorAt(&parser.current,message);
 }
 
-
+//it advances us to the next valid token and also handles error if there is an error in the token. it steps through the token stream. it asks for the next token and stores it for later use.
 static void advance(){
     parser.previous = parser.current;
 
@@ -104,6 +109,8 @@ static void advance(){
     }
 }
 
+
+//it reads the next token but also validates that the token has an expected type. its the foundation of most syntax errors in the compiler. 
 static void consume(TokenType type, const char* message){
     if(parser.current.type == type){
         advance();
@@ -123,11 +130,18 @@ static bool match(TokenType type){
 }
 
 
-//code gen functions
+//code gen functions.emits appends a single byte to the chunk.
+
+/*NOTE :  When emitByte is called, it is typically in response to a token that has already been parsed and processed (represented by parser.previous). 
+The bytecode being emitted is a direct result of this previously processed token. Therefore, it makes sense to use the line number of this token (parser.previous.line) 
+as it accurately reflects the source of the bytecode.*/
+
+
 static void emitByte(uint8_t byte){
     writeChunk(currentChunk(),byte, parser.previous.line);
 }
 
+//for cases where we have to write an opcode followed by an operand.
 static void emitBytes(uint8_t byte1, uint8_t byte2){
     emitByte(byte1);
     emitByte(byte2);
@@ -147,6 +161,9 @@ static void emitReturn(){
     emitByte(OP_RETURN);
 }
 
+
+
+//writing the constant to the chunk's constant pool and getting the index.
 static uint8_t makeConstant(Value value){
     int constant = addConstant(currentChunk(),value);
     if(constant>UINT8_MAX){
@@ -157,6 +174,8 @@ static uint8_t makeConstant(Value value){
 
 }
 
+
+//writing the operand and opcode to the chunk.
 static void emitConstant(Value value){
     emitBytes(OP_CONSTANT,makeConstant(value));
 }
@@ -282,7 +301,7 @@ static void defineVariable(uint8_t global){
     emitBytes(OP_DEFINE_GLOBAL,global);
 }
 
-//dealing with infix operators
+//dealing with infix operators // TOKEN_PLUS, TOKEN_MINUS, TOKEN_STAR, TOKEN_SLASH
 static void binary(bool canAssign){
     TokenType operatorType = parser.previous.type;
     ParseRule* rule= getRule(operatorType);
@@ -318,6 +337,8 @@ static void grouping(bool canAssign) {
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
+
+//for token TOKEN_NUMBER
 static void number(bool canAssign){
     double value = strtod(parser.previous.start,NULL);
     emitConstant(NUMBER_VAL(value));
@@ -356,7 +377,7 @@ static void variable(bool canAssign){
 static void unary(bool canAssign){
     TokenType operatorType = parser.previous.type;
 
-    //compile the operand
+    //compile the operand in terms of the precedence. PREC_UNARY has higher precedence than most others.
     parsePrecedence(PREC_UNARY);
 
     //emit the operator instruction
@@ -369,6 +390,7 @@ static void unary(bool canAssign){
 }
 
 //array of parse rules
+//the token enums are the indexes.
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN]    = {grouping, NULL,   PREC_NONE},
     [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
@@ -437,7 +459,7 @@ static ParseRule* getRule(TokenType type){
     return &rules[type];
 }
 
-
+//we parse the lowest precedence level which subsumes all of the higher precedence expressions too.
 static void expression(){
     parsePrecedence(PREC_ASSIGNMENT);
 

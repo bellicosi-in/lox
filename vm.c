@@ -262,6 +262,8 @@ When you subtract vm.chunk->code from vm.ip, what you're calculating is the numb
 /* this is the main entrypoint into vm. the VM springs into action when we command it to interpret a chunk of bytecode. we pass in the string of source code.*/
 
 InterpretResult interpret(const char* source){
+    /* we pass over an empty chunk, initialize it and then pass it over to the compiler that fills it with bytecode.*/
+
     Chunk chunk;
     initChunk(&chunk);
 
