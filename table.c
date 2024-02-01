@@ -113,6 +113,8 @@ void tableAddAll(Table* from, Table* to) {
   }
 }
 
+
+//looks for the string in the interned table to check if its already available.
 ObjString* tableFindString(Table* table,const char* chars,int length,uint32_t hash){
     if(table->count==0) return NULL;
 

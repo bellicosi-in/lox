@@ -69,6 +69,9 @@ HASH TABLES
  b. it mmust be uniform
  c. it must be fast.
 3. the ratio of load count to capacity is the load factor.
+4. we can use the hash table to look up the variables and the values associated with it. 
+5. we need a way to take string and convert it into a fixed size integer. 
+6. each objstring stores the hash code for its string
 
 
 JUMPING BACK AND FORTH
