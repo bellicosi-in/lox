@@ -322,6 +322,8 @@ static void binary(bool canAssign){
     }
 }
 
+
+/* this is to deal  with literals of the frontend such as NIL, TRUE , FALSE*/
 static void literal(bool canAssign){
     switch(parser.previous.type){
         case TOKEN_FALSE: emitByte(OP_FALSE);break;
@@ -344,6 +346,8 @@ static void number(bool canAssign){
     emitConstant(NUMBER_VAL(value));
 }
 
+
+// whenever the parser hits a string token, it calls this function. the +1, -2 is to remove the trailing quotation marks
 static void string(bool canAssign){
     emitConstant(OBJ_VAL(copyString(parser.previous.start+1,parser.previous.length-2)));
 }

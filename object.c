@@ -19,6 +19,7 @@ static Obj* allocateObject(size_t size,ObjType type){
     return object;
 }
 
+//it creates a new ObjString on the heap and then initializes its fields.
 static ObjString* allocateString(char* chars,int length,uint32_t hash){
     ObjString* string = ALLOCATE_OBJ(ObjString,OBJ_STRING);
     string->length = length;
@@ -40,7 +41,7 @@ static uint32_t hashString(const char* key,int length){
 }
 
 
-
+//creates an Obj String* on the heap.
 ObjString* takeString(char* chars, int length){
     uint32_t hash=hashString(chars,length);
     ObjString* interned = tableFindString(&vm.strings,chars,length,hash);

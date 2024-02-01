@@ -6,6 +6,7 @@
 #include "common.h"
 #include "value.h"
 
+//its a key value pair.
 typedef struct{
     ObjString* key;
     Value value;

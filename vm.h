@@ -22,6 +22,8 @@ typedef struct{
     Obj* objects;
     
 }VM;
+
+// The “object” module is directly using the global vm variable from the “vm” module, so we need to expose that externally..
 extern VM vm;
 
 

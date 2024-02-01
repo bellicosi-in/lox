@@ -47,6 +47,30 @@ and output the right bytecode.
 6.expressions that start with a particular expression are called prefix expressions.
 7.binary operators are infix expressions.
 
+TYPES OF VALUES:
+1. define a value struct that has support for different kinds of values. 
+
+STRINGS
+1. using stack to store the smaller, atomic values and heap for larger, variable sized values, leads to 2 level representation.
+2. data that lives on the heap will maintain a similar state for the garbage collector. we will call it obj
+3.Because ObjString is an Obj, it also needs the state all Objs share. It accomplishes that by having its first field be an Obj. 
+C specifies that struct fields are arranged in memory in the order that they are declared. 
+Also, when you nest structs, the inner struct’s fields are expanded right in place
+
+4. Objstring -> string -> copyString -> ALLOCATE -> reallocate -> heapChars -> allocateString -> allocateObject
+                            |_____________________________________________________|
+
+
+HASH TABLES
+1. Hash table - a set of keys and values.
+2.A hash function takes some larger blob of data and “hashes” it to produce a fixed-size integer hash code whose value depends on all of
+ the bits of the original data. it has three main goals :
+ a. it must be deterministic
+ b. it mmust be uniform
+ c. it must be fast.
+3. the ratio of load count to capacity is the load factor.
+
+
 JUMPING BACK AND FORTH
 1.by flow we mena the way execution moves through the text of the program.
 2. the VM's ip field stores the address of the current bytecode instruction. the value of that field is exactly "where we are " in the program.

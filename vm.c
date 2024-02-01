@@ -60,6 +60,9 @@ Value pop(){
     return *vm.stackTop;
 }
 
+
+//to peek if the value is actually a number, we need to go to the stack, and check the value. this function does that. distance is for how far down
+//the stack we can go.
 static Value peek(int distance){
     return vm.stackTop[-1-distance];
 }
@@ -69,7 +72,7 @@ static bool isFalsey(Value value){
 }
 
 
-
+//to concatenate two strings, we allocate separate memory and then allocate it on the heap.
 static void concatenate(){
     ObjString* b = AS_STRING(pop());
     ObjString* a = AS_STRING(pop());
