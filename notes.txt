@@ -80,6 +80,13 @@ GLOBAL VARIABLES
 3. each expression leaves one result value on stack. while the total net effect on the stack of a statement is 0.
 4.  table globals is the hash table where the variables(global) gets stored.
 
+LOCAL VARIABLES
+1. for local variables, we dont need to stuff the variable's name into the constant table, so if the declaration is inside a local scope,
+we return a dummy table index instead. 
+2. there's no code to create a local variable at runtime
+3. the compiler does need to remember that the variable exists for local variable.
+4. “Declaring” is when the variable is added to the scope, and “defining” is when it becomes available for use.
+
 
 JUMPING BACK AND FORTH
 1.by flow we mena the way execution moves through the text of the program.

@@ -50,11 +50,17 @@ typedef struct{
     Precedence precedence;
 }ParseRule;
 
+
+//struct for the local variable.
 typedef struct {
     Token name;
     int depth;
 }Local;
 
+
+//to ttrack the various states necessary for the implementation of local variables.
+//local count tracks how many locals are in scope
+//scopedepth - total number of blocks surrounding the current bit of code we're compiling.
 typedef struct{
     Local locals[UINT8_COUNT];
     int localCount;
@@ -212,6 +218,8 @@ static void endCompiler(){
 #endif
 }
 
+
+//we increment the scope to enter a new scope.
 static void beginScope(){
     current->scopeDepth++;
 }
@@ -244,6 +252,8 @@ static bool identifiersEqual(Token* a, Token* b){
     return memcmp(a->start,b->start,a->length)==0;
 }
 
+
+//to find the variable in the local scope.
 static int resolveLocal(Compiler* compiler, Token* name){
     for(int i=compiler->localCount-1; i>=0; i--){
         Local* local= &compiler->locals[i];
@@ -257,6 +267,8 @@ static int resolveLocal(Compiler* compiler, Token* name){
     return -1;
 }
 
+
+//it adds it to the compiler's list of variables in the current scope. 
 static void addLocal(Token name){
     if(current->localCount == UINT8_COUNT){
         error("Too many local variables in function");
@@ -268,9 +280,12 @@ static void addLocal(Token name){
     local->depth=-1;
 }
 
+
+
 static void declareVariable(){
     if(current->scopeDepth == 0)return;
     Token* name = &parser.previous;
+    //to not allow the same variable declaration in the same local scope.
     for(int i= current->localCount-1; i >= 0; i--){
         Local* local = &current->locals[i];
         if(local->depth != -1 && local->depth < current->scopeDepth){
@@ -363,6 +378,7 @@ static void string(bool canAssign){
 
 //takes the given identifier token and adds it to the chunk's constant pool and returns the index.
 static void namedVariable(Token name,bool canAssign){
+    //to resolve if we find it in the local scope or the global scope.
     uint8_t getOp, setOp;
     int arg = resolveLocal(current,&name);
     if(arg!= -1){
@@ -479,6 +495,7 @@ static void expression(){
 
 }
 
+//the declaration part keeps consuming until it hits the TOKEN_RIGHT_BRACE
 static void block(){
     while(!check(TOKEN_RIGHT_BRACE)&& !check(TOKEN_EOF)){
         declaration();
