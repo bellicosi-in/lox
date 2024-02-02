@@ -72,6 +72,13 @@ HASH TABLES
 4. we can use the hash table to look up the variables and the values associated with it. 
 5. we need a way to take string and convert it into a fixed size integer. 
 6. each objstring stores the hash code for its string
+7. string interning - create a collection of internal strings.  you only add unique strings to the collection.
+
+GLOBAL VARIABLES
+1. declarations are those statements that bind a new name to a value.
+2. the other kind of statements - control flow, print etc. are just called statements.
+3. each expression leaves one result value on stack. while the total net effect on the stack of a statement is 0.
+4.  table globals is the hash table where the variables(global) gets stored.
 
 
 JUMPING BACK AND FORTH

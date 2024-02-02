@@ -119,10 +119,13 @@ static void consume(TokenType type, const char* message){
     errorAtCurrent(message);
 }
 
+
+// to check if the current token is the same one that we are checking for.
 static bool check(TokenType type){
     return parser.current.type == type;
 }
 
+//'helper function to match a particular token such as print.
 static bool match(TokenType type){
     if(!check(type)) return false;
     advance();
@@ -229,6 +232,8 @@ static void declaration();
 static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
+
+//takes its given token and adds its lexeme to the chunk's constant table as a string. it returns the index of that constant in the constant table.
 static uint8_t identifierConstant(Token* name){
     return makeConstant(OBJ_VAL(copyString(name->start,name->length)));
 }
@@ -278,6 +283,8 @@ static void declareVariable(){
     addLocal(*name);
 }
 
+
+//takes the variable(global) and adds it to the constants pool.
 static uint8_t parseVariable(const char* errorMessage){
     consume(TOKEN_IDENTIFIER,errorMessage);
 
@@ -292,6 +299,7 @@ static void markInitialized(){
 }
 
 
+//the index from varDeclaration gets used here and put on the stack.
 static void defineVariable(uint8_t global){
     if(current->scopeDepth > 0){
         markInitialized();
@@ -352,6 +360,8 @@ static void string(bool canAssign){
     emitConstant(OBJ_VAL(copyString(parser.previous.start+1,parser.previous.length-2)));
 }
 
+
+//takes the given identifier token and adds it to the chunk's constant pool and returns the index.
 static void namedVariable(Token name,bool canAssign){
     uint8_t getOp, setOp;
     int arg = resolveLocal(current,&name);
@@ -372,7 +382,7 @@ static void namedVariable(Token name,bool canAssign){
     }
 }
 
-
+//whenever we want to get the value of a variable, this function us called.
 static void variable(bool canAssign){
     namedVariable(parser.previous,canAssign);
 }
@@ -477,7 +487,9 @@ static void block(){
 }
 
 
+//this is the function that we jump to when we encounter a TOKEN_VAR
 static void varDeclaration(){
+    //stores the variable in the chunk's constant pool and saves the index as global
     uint8_t global = parseVariable(" Expect variable name.");
 
     if(match(TOKEN_EQUAL)){
@@ -492,6 +504,7 @@ static void varDeclaration(){
     defineVariable(global);
 }
 
+//if there is no print keyword then we have an expression statement.  we pop the value to have the net effect of 0 on the stack.
 static void expressionStatement(){
     expression();
     consume(TOKEN_SEMICOLON,"Expect ';' after expression");
@@ -517,7 +530,7 @@ static void ifStatement(){
     patchJump(elseJump);
 }
 
-
+//after encountering the print token, the rest of the token gets consumed here.
 static void printStatement(){
     expression();
     consume(TOKEN_SEMICOLON,"Expect ';' after value");
@@ -554,7 +567,7 @@ static void synchronize(){
     }
 }
 
-
+// we compile a single declaration using this
 static void declaration(){
     if(match(TOKEN_VAR)){
         varDeclaration();

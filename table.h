@@ -12,6 +12,8 @@ typedef struct{
     Value value;
 }Entry;
 
+
+//the table that stores the entries along with the count and hte capacity
 typedef struct{
     int count;
     int capacity;

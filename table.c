@@ -41,6 +41,8 @@ static Entry* findEntry(Entry* entries,int capacity, ObjString* key){
     }
 }
 
+
+//to get a particular key value pair.
 bool tableGet(Table* table, ObjString* key, Value* value){
     if(table->count==0) return false;
 
@@ -50,7 +52,7 @@ bool tableGet(Table* table, ObjString* key, Value* value){
     *value=entry->value;
     return true;
 }
-
+//used to resize the hash table. create a new array of entries witht he new capacity and rehash or reinset the entries from the old table into the new one.
 static void adjustCapacity(Table* table, int capacity){
     Entry* entries = ALLOCATE(Entry,capacity);
     for(int i=0;i<capacity;i++){
@@ -72,7 +74,7 @@ static void adjustCapacity(Table* table, int capacity){
     table->capacity=capacity;
 }
 
-//adds the given key/value pair to the given hash table
+//adds the given key/value pair to the given hash table. also increases the count only when the key is not present in the table.
 bool tableSet(Table* table,ObjString* key,Value value){
     if(table->count+1 > table->capacity * TABLE_MAX_LOAD){
         int capacity = GROW_CAPACITY(table->capacity);
@@ -103,7 +105,7 @@ bool tableDelete(Table* table, ObjString* key){
     return true;
 }
 
-
+//to add all the entries from one hash tbale to another table.
 void tableAddAll(Table* from, Table* to) {
   for (int i = 0; i < from->capacity; i++) {
     Entry* entry = &from->entries[i];
