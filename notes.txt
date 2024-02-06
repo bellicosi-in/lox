@@ -91,4 +91,10 @@ we return a dummy table index instead.
 JUMPING BACK AND FORTH
 1.by flow we mena the way execution moves through the text of the program.
 2. the VM's ip field stores the address of the current bytecode instruction. the value of that field is exactly "where we are " in the program.
-3. to skip over a chunk of code, we simply set the ip field to the address of the bytecode instructions following that code. 
+3. to skip over a chunk of code, we simply set the ip field to the address of the bytecode instructions following that code. ``
+4. for logical operators, we tend to fast execute if a single true or false expression to get the fastest result.
+5. It has three clauses, all of which are optional:
+
+The initializer can be a variable declaration or an expression. It runs once at the beginning of the statement.
+The condition clause is an expression. Like in a while loop, we exit the loop when it evaluates to something falsey.
+The increment expression runs once at the end of each loop iteration.

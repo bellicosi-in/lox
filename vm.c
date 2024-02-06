@@ -144,7 +144,7 @@ When you subtract vm.chunk->code from vm.ip, what you're calculating is the numb
             case OP_TRUE: push(BOOL_VAL(true)); break;
             case OP_FALSE: push(BOOL_VAL(false));break;
             case OP_POP: pop(); break;
-            
+
             // It takes a single-byte operand for the stack slot where the local lives. 
             //It loads the value from that index and then pushes it on top of the stack where later instructions can find it.
             case OP_GET_LOCAL:{
@@ -248,6 +248,11 @@ When you subtract vm.chunk->code from vm.ip, what you're calculating is the numb
             case OP_JUMP:{
                 uint16_t offset = READ_SHORT();
                 vm.ip += offset;
+                break;
+            }
+            case OP_LOOP:{
+                uint16_t offset = READ_SHORT();
+                vm.ip -= offset;
                 break;
             }
             case OP_RETURN:{
