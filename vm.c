@@ -138,8 +138,8 @@ When you subtract vm.chunk->code from vm.ip, what you're calculating is the numb
             case OP_CONSTANT:{
                 Value constant = READ_CONSTANT();
                 push(constant);
-                printValue(constant);
-                printf("\n");
+                // printValue(constant);
+                // printf("\n");
                 break;
             }
 
