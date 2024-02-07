@@ -58,14 +58,16 @@ typedef struct {
 }Local;
 
 typedef enum{
-    TYPE_FUNCITON,
+    TYPE_FUNCTION,
     TYPE_SCRIPT
 }FunctionType;
+
 
 //to ttrack the various states necessary for the implementation of local variables.
 //local count tracks how many locals are in scope
 //scopedepth - total number of blocks surrounding the current bit of code we're compiling.
-typedef struct{
+typedef struct Compiler{
+    struct Compiler* enclosing;
     ObjFunction* function;
     FunctionType type;
 
@@ -224,13 +226,16 @@ static void patchJump(int offset){
 
 
 static void initCompiler(Compiler* compiler,FunctionType type){
+    compiler->enclosing = current;
     compiler->function = NULL;
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
     compiler->function = newFunction();
     current = compiler;
-
+    if(type != TYPE_SCRIPT){
+        current->function->name = copyString(parser.previous.start,parser.previous.length);
+    }
     Local* local = &current->locals[current->localCount++];
     local->depth = 0;
     local->name.start = "";
@@ -246,6 +251,7 @@ static ObjFunction* endCompiler(){
         disassembleChunk(currentChunk(),function->name != NULL?function->name->chars : "<script>");
     }
 #endif
+    current = current->enclosing;
     return function;
 }
 
@@ -343,6 +349,7 @@ static uint8_t parseVariable(const char* errorMessage){
 
 //to deal with variables that are not initialized and hence not ready for use.
 static void markInitialized(){
+    if(current->scopeDepth == 0) return;
     current->locals[current->localCount-1].depth = current->scopeDepth;
 }
 
@@ -355,6 +362,25 @@ static void defineVariable(uint8_t global){
     }
 
     emitBytes(OP_DEFINE_GLOBAL,global);
+}
+
+//We chew through arguments as long as we find commas after each expression. 
+//Once we run out, we consume the final closing parenthesis and we’re done.
+static uint8_t argumentList(){
+    uint8_t argCount = 0;
+    if(!check(TOKEN_RIGHT_PAREN)){
+        do{
+            expression();
+            if(argCount == 255){
+                error("Cant have more than 255 arguments.");
+            }
+            argCount++;
+
+        } while (match(TOKEN_COMMA));
+
+    }
+    consume(TOKEN_RIGHT_PAREN,"Expect ')' after argumnets");
+    return argCount;
 }
 
 
@@ -387,6 +413,12 @@ static void binary(bool canAssign){
         case TOKEN_SLASH:   emitByte(OP_DIVIDE); break;
         default: return;    //Unreachable
     }
+}
+
+//dealing with the calling of the function
+static void call(bool canAssign){
+    uint8_t argCount = argumnetList();
+    emitBytes(OP_CALL,argCount);
 }
 
 
@@ -481,7 +513,7 @@ static void unary(bool canAssign){
 //array of parse rules
 //the token enums are the indexes.
 ParseRule rules[] = {
-    [TOKEN_LEFT_PAREN]    = {grouping, NULL,   PREC_NONE},
+    [TOKEN_LEFT_PAREN]    = {grouping, call,   PREC_CALL},
     [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
     [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE}, 
     [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
@@ -560,6 +592,43 @@ static void block(){
         declaration();
     }
     consume(TOKEN_RIGHT_BRACE,"Expect '}' after block.");
+}
+
+
+//deals with the function body without worrying about the parameters for now.
+static void function(FunctionType type){
+
+    //for each function we create new Compiler, initialize it and put it on the stack
+    Compiler compiler;
+    initCompiler(&compiler,type);
+    beginScope();
+
+    consume(TOKEN_LEFT_PAREN,"Expect ( after the function name");
+    if(!check(TOKEN_RIGHT_PAREN)){
+        do{
+            current->function->arity++;
+            if(current->function->arity > 255){
+                errorAtCurrent("Cant have more than 255 parameters");
+
+            }
+            uint8_t constant = parseVariable("Expect parameter name");
+            defineVariable(constant);
+
+        }while(match(TOKEN_COMMA));
+    }
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after the parameters");
+    consume(TOKEN_LEFT_BRACE,"expect { before the function body");
+    block();
+
+    ObjFunction* function = endCompiler();
+    emitBytes(OP_CONSTANT,makeConstant(OBJ_VAL(function)));
+}
+
+static void funDeclaration(){
+    uint8_t global = parseVariable("Expect function name");
+    markInitialized();
+    function(TYPE_FUNCTION);
+    defineVariable(global);
 }
 
 
@@ -708,7 +777,9 @@ static void synchronize(){
 
 // we compile a single declaration using this
 static void declaration(){
-    if(match(TOKEN_VAR)){
+    if(match(TOKEN_FUN)){
+        funDeclaration();
+    }else if(match(TOKEN_VAR)){
         varDeclaration();
     } else {
         statement();
