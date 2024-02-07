@@ -5,13 +5,24 @@
 #include "common.h"
 #include "value.h"
 #include "table.h"
+#include "object.h"
 
-#define STACK_MAX 256
+
+#define FRAMES_MAX 64
+#define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
+
+//to store the metadata for each function that has not been called.
+//each call frame represents a single function call.
+//the slots field points into the VM's value stack at the first slot that this function can use.
+typedef struct{
+    ObjFunction* function;
+    uint8_t* ip;
+    Value* slots;
+}CallFrame;
 
 typedef struct{
-    Chunk* chunk;
-    /* the ip tracks the bytecode through the chunk thats passed to the vm. ip always points to the instruction about to be executed. */
-    uint8_t* ip;
+    CallFrame frames[FRAMES_MAX];
+    int frameCount;
 
 /*the temporary values we need to traxk have stack like behavior. when an instruction produces a value it pushes it onto the stack to manage them.
  when an instruction produces a value it pushes it onto the stack. when it needs to consume one or more values, it gets them by popping them off the stack*/

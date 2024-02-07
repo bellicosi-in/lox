@@ -98,3 +98,15 @@ JUMPING BACK AND FORTH
 The initializer can be a variable declaration or an expression. It runs once at the beginning of the statement.
 The condition clause is an expression. Like in a while loop, we exit the loop when it evaluates to something falsey.
 The increment expression runs once at the end of each loop iteration.
+
+CALLS AND FUNCTIONS
+1. we give each function its own chunk along with some metadata
+2. Activation record - a region of storage set aside to hold control information and data storage associated with a single instance of a single procedure.
+3. activation record pointer to locate the current AR, the compiler arranges to keep a pointer to AR, the activation record pointer in a designated register.
+4. the current chunk is always the chunk owned by the function we're in the middle of compiling.
+5. the compiler implicitly claims a stack slot zero for the vm's own internal use. we give it an empty name so that the user cant refer to it.
+6. the recorded location where the function's locals start is a frame pointer.  
+7. for each live function invocation- we need to track where on the stack that function's locals begin and where the call should resume.
+8. instead of storing the return addresses in the callee's frame, the caller's stores its own ip. when we return from a function, the VM will jump to the ip of the
+caller's callFrame and resume from here. 
+9.each time a function is called, we create a callframe struct.

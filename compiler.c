@@ -57,11 +57,18 @@ typedef struct {
     int depth;
 }Local;
 
+typedef enum{
+    TYPE_FUNCITON,
+    TYPE_SCRIPT
+}FunctionType;
 
 //to ttrack the various states necessary for the implementation of local variables.
 //local count tracks how many locals are in scope
 //scopedepth - total number of blocks surrounding the current bit of code we're compiling.
 typedef struct{
+    ObjFunction* function;
+    FunctionType type;
+
     Local locals[UINT8_COUNT];
     int localCount;
     int scopeDepth;
@@ -69,10 +76,10 @@ typedef struct{
 
 Parser parser;
 Compiler* current = NULL;
-Chunk* compilingChunk;
+
 
 static Chunk* currentChunk(){
-    return compilingChunk;
+    return &current->function->chunk;
 }
 
 
@@ -210,26 +217,36 @@ static void patchJump(int offset){
     }
 
     //the higher 8 bits are stored
-    currentChunk()->code[offset] = jump>>8 && 0xff;
+    currentChunk()->code[offset] = jump>>8 & 0xff;
     //the lower 8 bits are stored.
-    currentChunk()-> code[offset + 1] = jump && 0xff;
+    currentChunk()-> code[offset + 1] = jump & 0xff;
 }
 
 
-static void initCompiler(Compiler* compiler){
+static void initCompiler(Compiler* compiler,FunctionType type){
+    compiler->function = NULL;
+    compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
+    compiler->function = newFunction();
     current = compiler;
+
+    Local* local = &current->locals[current->localCount++];
+    local->depth = 0;
+    local->name.start = "";
+    local->name.length = 0;
 }
 
 
-static void endCompiler(){
+static ObjFunction* endCompiler(){
     emitReturn();
+    ObjFunction* function = current->function;
 #ifdef DEBUG_PRINT_CODE
     if(!parser.hadError){
-        disassembleChunk(currentChunk(),"code");
+        disassembleChunk(currentChunk(),function->name != NULL?function->name->chars : "<script>");
     }
 #endif
+    return function;
 }
 
 
@@ -721,20 +738,21 @@ static void statement(){
 
 
 
-bool compile(const char* source,Chunk* chunk){
+ObjFunction* compile(const char* source){
     /* the first phase of compilation is scanning, so we are setting that up.*/
     initScanner(source);
     Compiler compiler;
-    initCompiler(&compiler);
-    compilingChunk=chunk;
+    initCompiler(&compiler,TYPE_SCRIPT);
+
     parser.hadError = false;
     parser.panicMode = false;
     advance();
     while(!match(TOKEN_EOF)){
         declaration();
     }
-    endCompiler();
-    return !parser.hadError;
+
+    ObjFunction* function = endCompiler();
+    return parser.hadError ? NULL : function;
 
 
 
