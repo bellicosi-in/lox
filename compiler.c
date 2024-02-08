@@ -417,7 +417,7 @@ static void binary(bool canAssign){
 
 //dealing with the calling of the function
 static void call(bool canAssign){
-    uint8_t argCount = argumnetList();
+    uint8_t argCount = argumentList();
     emitBytes(OP_CALL,argCount);
 }
 
@@ -729,6 +729,19 @@ static void printStatement(){
 
 }
 
+//dealing with the return statement
+static void returnStatement(){
+    if(current->type == TYPE_SCRIPT){
+        error("Can't return from top level code");
+    }
+    if(match(TOKEN_SEMICOLON)){
+        emitReturn();
+    }else{
+        expression();
+        consume(TOKEN_SEMICOLON,"Expect ';' after return value");
+        emitByte(OP_RETURN);
+    }
+}
 
 //dealing with the while statemnet
 static void whileStatement(){
@@ -795,6 +808,8 @@ static void statement(){
     
     }else if (match(TOKEN_IF)){
         ifStatement(); 
+    }else if (match(TOKEN_RETURN)){
+        returnStatement();
     }else if(match(TOKEN_WHILE)){
             whileStatement();
     

@@ -110,3 +110,5 @@ CALLS AND FUNCTIONS
 8. instead of storing the return addresses in the callee's frame, the caller's stores its own ip. when we return from a function, the VM will jump to the ip of the
 caller's callFrame and resume from here. 
 9.each time a function is called, we create a callframe struct.
+10. A programming language implementation reaches out and touches the material world through native functions. if you want to be able to write programs that check the
+time, read user input or access the file system, we need to add native funcitons-callable from lox but implemented in C - that expose those capabilities.
