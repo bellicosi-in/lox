@@ -113,18 +113,22 @@ static bool callValue(Value callee, int argCount){
         switch(OBJ_TYPE(callee)){
             case OBJ_FUNCTION:
                 return call(AS_FUNCTION(callee), argCount);
-            case OBJ_NATIVE:
+            case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
                 vm.stackTop -= argCount + 1;
                 push(result);
                 return true;
+            }
+                
+            
             default: 
                 break;
         }
-        runtimeError("Can only call functions and classes");
-        return false;
+        
     }
+    runtimeError("Can only call functions and classes");
+    return false;
 }
 
 static bool isFalsey(Value value){

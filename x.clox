@@ -1,4 +1,7 @@
-var a;
-a = "run";
-print a;
+fun x(a){
+    if(a>4){
+        print("x");
+    }
+}
 
+x(5);

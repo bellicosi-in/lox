@@ -54,7 +54,7 @@ typedef struct{
     Obj obj;
     NativeFn function;
 
-}ObjNative;
+} ObjNative;
 
 // Given an ObjString*, you can safely cast it to Obj* and then access the type field from it. Every ObjString “is” an Obj in the OOP sense of “is”.
 // You can take a pointer to a struct and safely convert it to a pointer to its first field and back.

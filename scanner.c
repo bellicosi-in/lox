@@ -124,7 +124,7 @@ static void skipWhitespace(){
     }
 }
 
-/* this checks if the reserved keyword matches character for character*/
+/* this checks if the reserved keyword matches character for*/
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type){
     if(scanner.current-scanner.start==start+length && memcmp(scanner.start+start,rest,length)==0){
         return type;
@@ -205,8 +205,9 @@ static Token string(){
 //each call scans and returns the next token in the source code.
 
 Token scanToken(){
-    scanner.start=scanner.current;
+    
     skipWhitespace();
+    scanner.start=scanner.current;
     if(isAtEnd()) return makeToken(TOKEN_EOF);
 
     //to recognise single character tokens.

@@ -78,7 +78,7 @@ typedef struct Compiler{
 
 Parser parser;
 Compiler* current = NULL;
-
+Chunk* compilingChunk;
 
 static Chunk* currentChunk(){
     return &current->function->chunk;
@@ -86,19 +86,22 @@ static Chunk* currentChunk(){
 
 
 //this is the major function that handles the error
-static void errorAt(Token* token, const char* message){
-    if(parser.panicMode) return;
-    parser.panicMode=true;
-    fprintf(stderr,"[line %d] Error", token->line);
-    if(token->type==TOKEN_EOF){
-        fprintf(stderr," at end");
-    } else if (token->type==TOKEN_ERROR) {
+static void errorAt(Token* token, const char* message) {
+    if (parser.panicMode)
+        return;
+    parser.panicMode = true;
     
-    }else{
-        fprintf(stderr," at '%.*s' ", token->length,token->start);
+    fprintf(stderr, "[line %d] Error", token->line);
+
+    if (token->type == TOKEN_EOF) {
+        fprintf(stderr, " at end");
+    } else if (token->type == TOKEN_ERROR) {
+    } else {
+        fprintf(stderr, " at '%.*s'", token->length, token->start);
     }
-    fprintf(stderr,"%s\n",message);
-    parser.hadError=true;
+
+    fprintf(stderr, ": %s\n", message);
+    parser.hadError = true;
 }
 
 //this is called when the error is pertaining to the previous token.
@@ -187,6 +190,7 @@ static int emitJump(uint8_t instruction){
 
 
 static void emitReturn(){
+    emitByte(OP_NIL);
     emitByte(OP_RETURN);
 }
 
@@ -395,23 +399,24 @@ static void and_(bool canAssign){
 }
 
 //dealing with infix operators // TOKEN_PLUS, TOKEN_MINUS, TOKEN_STAR, TOKEN_SLASH
-static void binary(bool canAssign){
+static void binary(bool canAssign) {
     TokenType operatorType = parser.previous.type;
-    ParseRule* rule= getRule(operatorType);
-    parsePrecedence((Precedence)(rule->precedence+1));
 
-    switch (operatorType){
-        case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
-        case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
-        case TOKEN_GREATER:       emitByte(OP_GREATER); break;
-        case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
-        case TOKEN_LESS:          emitByte(OP_LESS); break;
-        case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
-        case TOKEN_PLUS:    emitByte(OP_ADD); break;
-        case TOKEN_MINUS:   emitByte(OP_SUBTRACT); break;
-        case TOKEN_STAR:    emitByte(OP_MULTIPLY); break;
-        case TOKEN_SLASH:   emitByte(OP_DIVIDE); break;
-        default: return;    //Unreachable
+    ParseRule* rule = getRule(operatorType);
+    parsePrecedence((Precedence)(rule->precedence + 1));
+
+    switch (operatorType) {
+    case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT);   break;
+    case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL);            break;
+    case TOKEN_GREATER:       emitByte(OP_GREATER);          break;
+    case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT);    break;
+    case TOKEN_LESS:          emitByte(OP_LESS);             break;
+    case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
+    case TOKEN_PLUS:          emitByte(OP_ADD);              break;
+    case TOKEN_MINUS:         emitByte(OP_SUBTRACT);         break;
+    case TOKEN_STAR:          emitByte(OP_MULTIPLY);         break;
+    case TOKEN_SLASH:         emitByte(OP_DIVIDE);           break;
+    default: return;
     }
 }
 
@@ -525,13 +530,13 @@ ParseRule rules[] = {
     [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
     [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
     [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
-    [TOKEN_BANG_EQUAL]    = {NULL,     binary,   PREC_NONE},
+    [TOKEN_BANG_EQUAL]    = {NULL,     binary,   PREC_EQUALITY},
     [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_EQUAL_EQUAL]   = {NULL,     binary,   PREC_NONE},
-    [TOKEN_GREATER]       = {NULL,     binary,   PREC_NONE},
-    [TOKEN_GREATER_EQUAL] = {NULL,     binary,   PREC_NONE},
-    [TOKEN_LESS]          = {NULL,     binary,   PREC_NONE},
-    [TOKEN_LESS_EQUAL]    = {NULL,     binary,   PREC_NONE},
+    [TOKEN_EQUAL_EQUAL]   = {NULL,     binary,   PREC_EQUALITY},
+    [TOKEN_GREATER]       = {NULL,     binary,   PREC_COMPARISON},
+    [TOKEN_GREATER_EQUAL] = {NULL,     binary,   PREC_COMPARISON},
+    [TOKEN_LESS]          = {NULL,     binary,   PREC_COMPARISON},
+    [TOKEN_LESS_EQUAL]    = {NULL,     binary,   PREC_COMPARISON},
     [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
     [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
     [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
