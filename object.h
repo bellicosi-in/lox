@@ -9,11 +9,14 @@
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 
 #define IS_FUNCTION(value) isObjType(value,OBJ_FUNCTION)
+#define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
 
 
 //returns the ObjFunction* pointer
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
+//returns the OBJ_native pointer
+#define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
 //returns the ObjString* pointer to the objstring pointer
 #define AS_STRING(value)  ((ObjString*)AS_OBJ(value))
 
@@ -22,6 +25,7 @@
 
 typedef enum {
     OBJ_FUNCTION,
+    OBJ_NATIVE,
     OBJ_STRING,
 } ObjType;
 
@@ -42,6 +46,16 @@ typedef struct{
 
 }ObjFunction;
 
+//The native function takes the argument count and a pointer to the first argument on the stack. 
+// It accesses the arguments through that pointer. Once it’s done, it returns the result value.
+typedef Value (*NativeFn) (int argCount, Value* args);
+
+typedef struct{
+    Obj obj;
+    NativeFn function;
+
+}ObjNative;
+
 // Given an ObjString*, you can safely cast it to Obj* and then access the type field from it. Every ObjString “is” an Obj in the OOP sense of “is”.
 // You can take a pointer to a struct and safely convert it to a pointer to its first field and back.
 struct ObjString {
@@ -53,6 +67,7 @@ struct ObjString {
 
 
 ObjFunction* newFunction();
+ObjNative* newNative(NativeFn function);
 ObjString* takeString(char* chars, int length);
 ObjString* copyString(const char* chars, int length);
 void printObject(Value value);
