@@ -1,8 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+
 #include "compiler.h"
 #include "scanner.h"
+#include "memory.h"
 
 
 
@@ -911,4 +914,13 @@ ObjFunction* compile(const char* source){
 
 
     
+}
+
+void markCompilerRoots(){
+
+    Compiler* compiler = current;
+    while(compiler!=NULL){
+        markObject((Obj*)compiler->function);
+        compiler = compiler->enclosing;
+    }
 }

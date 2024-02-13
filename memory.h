@@ -29,7 +29,9 @@
 
 // this is the function that basically handles all the dynamic memory management in clox. it basically is the backend for the memory reallocation.
 void* reallocate(void* pointer,size_t oldSize, size_t newSize);
-
+void markObject(Obj* object);
+void markValue(Value value);
+void collectGarbage();
 
 void freeObjects();
 #endif

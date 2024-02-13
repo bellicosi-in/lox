@@ -31,7 +31,14 @@ typedef struct{
     Table globals;
     Table strings;
     ObjUpvalue* openUpvalues;
+    //number of bytes of managed memory the VM has allocated
+    size_t bytesAllocated;
+    //threshold that triggers the collection
+    size_t nextGC;
     Obj* objects;
+    int grayCount;
+    int grayCapacity;
+    Obj** grayStack;
     
 }VM;
 

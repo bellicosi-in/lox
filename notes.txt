@@ -117,15 +117,50 @@ CLOSURES
 1. A closure is a record storing function together with an environment: a mapping associating each free variable of the function with the value or storage 
 location to which the name was bound when the closure was created. A closure, unlike a plain function, allows the function to access those captured variables
 through the closure's reference to them, even when the function is invoked outside their scope.
-x
 2. How Closures Work
 Creating a Closure:
 When you define a function inside another function, and the inner function accesses variables from the outer function, a closure is formed.
 The inner function (the closure) maintains references to these outer variables even after the outer function has completed execution.
-
 3. Note that the new call to addUpvalue() passes false for the isLocal parameter. Now you see that that flag controls whether the closure captures a local variable or an upvalue from the surrounding function.
 4. each OP_CLOSURE instruction is followed by the series of bytes that specify the upvalues that the ObjClosure should own.
 5. Closures capture variables. You can think of them as capturing the place the value lives. 
 This is important to keep in mind as we deal with closed-over variables that are no longer on the stack.
 When a variable moves to the heap, we need to ensure that all closures capturing that variable retain a reference to its one new location.
  That way, when the variable is mutated, all closures see the change.
+
+GARBAGE COLLECTION
+1. VMs consider a piece of memory to still be in use if it could possibly be read in the future.
+2. A conservative gc is a special kind of collector that cinsiders any piece of memory to be a pointer if the value in there looks like it could be an address
+3. A precise gc knows eactly which words in memory are pointers and which store other kinds of calues like numbers or strings.
+4. A value is reachable if there is some way for a user program to reference it. 
+5. A root is any object that the VM can reach directly without oging through a reference in some ohter object. Most roots are global variables or on the stack,
+but as we'll see, there are a couple of other places the VM stores references to objects that it can find,
+6. reachablility:
+a. all roots are reachable.
+b. any object referred t from a reachable object is itself reachable.
+7. any values that doesnt meet the above definition is fair game.
+
+8. the two fundamental steps for garbage collection is a recursive algorithm:
+a. starting witht the roots, traverse through object refernces to fund the full set of reachable objects.
+b. free all objects not in that set.
+
+9.MARK- SWEEP :
+    a. we start with the roots and traverse or trace through all of the objects those roots refer to. this is a classic graph traversal of all ther reachable
+    objects. each time we visit an object, we mark it in some way.
+    b. once the mark phase completes, every reachable object in the heao has been marked, that means any unmarked object is unreachable and ripe of reclamation.
+    we go through all the unmarked objects and free each one.
+
+10. A tracing garbage collector is any algorithm that races through the graph of object referencess. 
+11. As the collector wanders through the graph of objects, we need to make sure it doesnt lose track of where it is o get stuch going in circles. fro this purpose
+VM hackers came up with a metaphor called tricolor abstraction. Each object has a concpetual color that tracks what state the object is in, and what work is
+left to do.
+a. white = at the beginning of garbage collection, every object is white. that color means we have not reached or processed the object at all.
+b. gray = during marking when we first reach an object, we darken it gray. this color means we know the obejct itself is reachable and should not be collected. but we have not yet
+traced through it to see what other objects it references.  in graph algorithm terms, this is the worklist - the set of objects we know about but haven't processed it yet.
+c. black = when we take a gray object and mark all of th eobjects it references, we then turn the gray object black, this color means the mark phase is done processing
+that object.
+
+12. pertaining to when the gc should run: two fundamental numbers used when measuring a memory manager's performance : throughput and latency
+a. every managed language pays a performance price compared to explicit, user- authored deallocation. the time mostly is taken in figuring out which memory to free.
+b. 1. Throughput - it is the total fraction of time spend running user code versus doing garbage collection work. 
+    2. latency - it is the longest continuous chunk of time where the user's program is completely paused while garbage collection happens.

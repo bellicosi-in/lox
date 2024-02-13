@@ -37,6 +37,7 @@ typedef enum {
 //all the data types that live on the stack is called Obj.
 struct Obj {
     ObjType type;
+    bool isMarked;
     struct Obj* next;
 };
 

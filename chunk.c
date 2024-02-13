@@ -1,5 +1,6 @@
 #include "chunk.h"
 #include "memory.h"
+#include "vm.h"
 
 
 /* Initialize the new chunk. the dynamic array starts off completely empty.*/
@@ -32,7 +33,9 @@ void writeChunk(Chunk* chunk,uint8_t byte,int line){
 //adding the constant value to the constant pool of the array and returning the index
 // when the VM loads the OP_CONSTANT instruction, it also loads the constant for use. 
 int addConstant(Chunk* chunk,Value value){
+    push(value);
     writeValueArray(&chunk->constants,value);
+    pop();
     return chunk->constants.count-1;
 }
 
