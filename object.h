@@ -30,6 +30,7 @@ typedef enum {
     OBJ_FUNCTION,
     OBJ_NATIVE,
     OBJ_STRING,
+    OBJ_UPVALUE,
 } ObjType;
 
 
@@ -68,10 +69,20 @@ struct ObjString {
     char*    chars;
     uint32_t hash;
 };
+// our runtime upvalue structure is an ObjUpvalue with the typical Obj header field.
+// Following that is a location field that points to the closed-over variable. 
+typedef struct ObjUpvalue{
+    Obj obj;
+    Value* location;
+    Value closed;
+    struct ObjUpvalue* next;
+}ObjUpvalue;
 
 typedef struct {
     Obj obj;
     ObjFunction* function;
+    ObjUpvalue** upvalues;
+    int upvalueCount;
 
 }ObjClosure;
 
@@ -80,6 +91,7 @@ ObjFunction* newFunction();
 ObjNative* newNative(NativeFn function);
 ObjString* takeString(char* chars, int length);
 ObjString* copyString(const char* chars, int length);
+ObjUpvalue* newUpvalue(Value* slot);
 void printObject(Value value);
 
 

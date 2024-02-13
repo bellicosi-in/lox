@@ -122,3 +122,10 @@ x
 Creating a Closure:
 When you define a function inside another function, and the inner function accesses variables from the outer function, a closure is formed.
 The inner function (the closure) maintains references to these outer variables even after the outer function has completed execution.
+
+3. Note that the new call to addUpvalue() passes false for the isLocal parameter. Now you see that that flag controls whether the closure captures a local variable or an upvalue from the surrounding function.
+4. each OP_CLOSURE instruction is followed by the series of bytes that specify the upvalues that the ObjClosure should own.
+5. Closures capture variables. You can think of them as capturing the place the value lives. 
+This is important to keep in mind as we deal with closed-over variables that are no longer on the stack.
+When a variable moves to the heap, we need to ensure that all closures capturing that variable retain a reference to its one new location.
+ That way, when the variable is mutated, all closures see the change.
