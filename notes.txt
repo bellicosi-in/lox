@@ -112,3 +112,13 @@ caller's callFrame and resume from here.
 9.each time a function is called, we create a callframe struct.
 10. A programming language implementation reaches out and touches the material world through native functions. if you want to be able to write programs that check the
 time, read user input or access the file system, we need to add native funcitons-callable from lox but implemented in C - that expose those capabilities.
+
+CLOSURES
+1. A closure is a record storing function together with an environment: a mapping associating each free variable of the function with the value or storage 
+location to which the name was bound when the closure was created. A closure, unlike a plain function, allows the function to access those captured variables
+through the closure's reference to them, even when the function is invoked outside their scope.
+x
+2. How Closures Work
+Creating a Closure:
+When you define a function inside another function, and the inner function accesses variables from the outer function, a closure is formed.
+The inner function (the closure) maintains references to these outer variables even after the outer function has completed execution.

@@ -1,7 +1,9 @@
-fun x(a){
-    if(a>4){
-        print("x");
-    }
+var x = "global";
+fun outer() {
+  var x = "outer";
+  fun inner() {
+    print x;
+  }
+  inner();
 }
-
-x(5);
+outer();

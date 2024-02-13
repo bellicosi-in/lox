@@ -57,6 +57,11 @@ typedef struct {
     int depth;
 }Local;
 
+typedef struct{
+    uint8_t index;
+    bool isLocal;
+}Upvalue;
+
 typedef enum{
     TYPE_FUNCTION,
     TYPE_SCRIPT
@@ -73,6 +78,7 @@ typedef struct Compiler{
 
     Local locals[UINT8_COUNT];
     int localCount;
+    Upvalue upvalues[UINT8_COUNT];
     int scopeDepth;
 }Compiler;
 
@@ -307,7 +313,47 @@ static int resolveLocal(Compiler* compiler, Token* name){
     }
     return -1;
 }
+//adds a new upvalue to that array. also keeps track of the number of upvalue the function uses;.
+//the index field tracks the closed-over local variable's index.the compiler knows which variable in the enclosing function 
+//needs to be captured. addUpValue returns the index of the created upvalue in the funciton's upvalue list.
+//that index becomes the operand to the OP_GET_UPVALUE and OP_SET_UPVALUE instructionsl.
+static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal){
+    int upvalueCount = compiler->function->upvalueCount;
+    //If we find an upvalue in the array whose slot index matches the one we’re adding, we just return that upvalue index and reuse it. 
+    //Otherwise, we fall through and add the new upvalue.
+    for(int i = 0; i < upvalueCount; i++){
+        Upvalue* upvalue = &compiler->upvalues[i];
+        if(upvalue->index == index && upvalue->isLocal == isLocal){
+            return i;
+        }
+    }
+    if(upvalueCount == UINT8_COUNT){
+        error("Too many closure variables in fucntion");
+        return 0;
+    }
+    compiler->upvalues[upvalueCount].isLocal = isLocal;
+    compiler -> upvalues[upvalueCount].index = index;
+    return compiler->function->upvalueCount++;
+}
 
+// Compiler stores a pointer to the Compiler for the enclosing function, and these pointers
+// form a linked chain that goes all the way to the root Compiler for the top-level code.
+//we look for the variable in the compiler struct after the local compiler. if we have reached the 
+//nULL, we have reached the outermost function,else we look for it in the surrounding functioin
+static int resolveUpvalue(Compiler* compiler, Token* name){
+    if(compiler->enclosing ==NULL) return -1;
+    int local = resolveLocal(compiler->enclosing, name);
+    if(local!=-1){
+        return addUpvalue(compiler,(uint8_t)local, true);
+    }
+
+    int upvalue = resolveUpvalue(compiler->enclosing, name);
+    if(upvalue != -1){
+        return addUpvalue(compiler,(uint8_t)upvalue, false);
+    }
+
+    return -1;
+}
 
 //it adds it to the compiler's list of variables in the current scope. 
 static void addLocal(Token name){
@@ -480,7 +526,10 @@ static void namedVariable(Token name,bool canAssign){
     if(arg!= -1){
         getOp=OP_GET_LOCAL;
         setOp=OP_SET_LOCAL;
-    } else{
+    } else if((arg = resolveUpvalue(current,&name))!= -1){
+        getOp = OP_GET_UPVALUE;
+        setOp = OP_SET_UPVALUE;
+    }else{
         arg= identifierConstant(&name);
         getOp = OP_GET_GLOBAL;
         setOp = OP_SET_GLOBAL;
@@ -626,7 +675,7 @@ static void function(FunctionType type){
     block();
 
     ObjFunction* function = endCompiler();
-    emitBytes(OP_CONSTANT,makeConstant(OBJ_VAL(function)));
+    emitBytes(OP_CLOSURE,makeConstant(OBJ_VAL(function)));
 }
 
 static void funDeclaration(){
