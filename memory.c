@@ -45,7 +45,10 @@ static void freeObject(Obj* object){
             FREE(ObjString,object);
             break;
         }
-
+        case OBJ_BOUND_METHOD:{
+            FREE(ObjBoundMethod, object);
+            break;
+        }
         case OBJ_CLASS:{
             ObjClass* klass = (ObjClass*)object;
             freeTable(&klass->methods);
@@ -123,6 +126,12 @@ static void blackenObject(Obj* object){
     printf("\n");
 #endif
     switch(object->type){
+        case OBJ_BOUND_METHOD:{
+            ObjBoundMethod* bound = (ObjBoundMethod*)object;
+            markValue(bound->reciever);
+            markObject((Obj*)bound->method);
+            break;
+        }
         case OBJ_CLASS:{
             ObjClass* klass = (ObjClass*) object;
             markObject((Obj*)klass -> name);
@@ -174,6 +183,7 @@ static void markRoots(){
     }
     markTable(&vm.globals);
     markCompilerRoots();
+    markObject((Obj*)vm.initString);
 }
 
 //once the loop exits, we have processed all the objects, we could get our hands on. The gray stack is empty and every object in the heap is either black or white.

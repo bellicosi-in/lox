@@ -30,6 +30,7 @@ typedef struct{
     Value* stackTop;
     Table globals;
     Table strings;
+    ObjString* initString;
     ObjUpvalue* openUpvalues;
     //number of bytes of managed memory the VM has allocated
     size_t bytesAllocated;

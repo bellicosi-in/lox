@@ -172,3 +172,49 @@ CLASSES AND INSTANCES
     a. they are how you create new instances
     b. they contain methods.
 2. 
+
+METHODS
+
+1. for each method declaration, we emit a new OP-METHOD instruction that adds a
+single method to that class.
+2. while the user sees it as a single atomic operation, we implement it as a series
+of mutations.
+3. to define a new method, the VM needs three things:
+    a. the name of the method.
+    b. the closure for the method body.
+    c. the class to bind the method to.
+In the Context of Clox
+In Clox (from "Crafting Interpreters"), a similar concept applies:
+
+When a method is defined in a class, it doesn't inherently belong to any particular instance.
+When you access a method on an instance of a class (e.g., myInstance.myMethod()), this within myMethod is automatically bound to myInstance.
+This binding allows the method to interact with the specific instance (myInstance in this case), using this to refer to the instance.
+Why It Matters
+This concept is vital for:
+
+Encapsulation: Methods can operate on their own object's data.
+Reusability: The same method can be used across different instances of a class, with this allowing each method call to be specific to its instance.
+Conclusion
+The automatic binding of this to the instance a method is accessed from is a key feature of object-oriented programming. It provides methods with context 
+about which object they are operating on, enabling more dynamic and reusable code structures.
+
+The compiler keeps track of which slots in the function’s stack window are owned by which local variables. If you recall, the compiler sets aside stack slot zero by declaring a local variable whose name is an empty string.
+
+For function calls, that slot ends up holding the function being called. Since the slot has no name, 
+the function body never accesses it. You can guess where this is going. For method calls, we can repurpose that slot to store the receiver. 
+Slot zero will store the instance that this is bound to. In order to compile this expressions, the compiler simply needs to give the correct name to that local variable.
+
+Initializers work mostly like normal methods, with a few tweaks:
+1. the runtime automatically invokes the initializer method whenever an instance
+of a class is created.
+2. the caller that constructs an instance always gets the instance back after
+the initializer finishes, regardless of what the initializer function itself returns.
+the intializer method doesn't need to explicitly return this.
+3. in fact, an initializer is prohibited from returning any value at all since the value would 
+never be seen anyway.
+
+OP_INVOKE :
+does the work of two BYTECODES - OP_GET_PROPERTY & OP_CALL
+it takes two operands:
+1. the index of the property name in the constant table.
+2. the number of arguments passed to the method.
