@@ -164,3 +164,11 @@ that object.
 a. every managed language pays a performance price compared to explicit, user- authored deallocation. the time mostly is taken in figuring out which memory to free.
 b. 1. Throughput - it is the total fraction of time spend running user code versus doing garbage collection work. 
     2. latency - it is the longest continuous chunk of time where the user's program is completely paused while garbage collection happens.
+
+
+CLASSES AND INSTANCES
+
+1. classses serve two main purposes in a language:
+    a. they are how you create new instances
+    b. they contain methods.
+2. 
