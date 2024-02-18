@@ -218,3 +218,10 @@ does the work of two BYTECODES - OP_GET_PROPERTY & OP_CALL
 it takes two operands:
 1. the index of the property name in the constant table.
 2. the number of arguments passed to the method.
+
+
+SUPERCLASSES:
+
+1. we use the copy down method for inheritance, where we transfer all the methods of superclasses onto the subclass. 
+2. we first create the class OP_CLASS to create the class after which we invoke OP_INHERIT to transfer all the methods of superclass to the subclass. after this
+we use the OP_METHOD to invoke the methods of the subclass, so that if there are same methods, subclass's method overrides the superclass's methods.

@@ -179,7 +179,7 @@ static bool invoke(ObjString* name,int argCount){
         vm.stackTop[-argCount - 1] = value;
         return callValue(value,argCount);
     }
-    return invokeFromClasss(instance->klass, name, argCount);
+    return invokeFromClass(instance->klass, name, argCount);
 }
 
 static bool bindMethod(ObjClass* klass, ObjString* name){
@@ -521,6 +521,17 @@ When you subtract vm.chunk->code from vm.ip, what you're calculating is the numb
             }
             case OP_CLASS:{
                 push(OBJ_VAL(newClass(READ_STRING())));
+                break;
+            }
+            case OP_INHERIT:{
+                Value superclass = peek(1);
+                if(!IS_CLASS(superclass)){
+                    runtimeError("superclass must be a class");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                ObjClass* subclass = AS_CLASS(peek(0));
+                tableAddAll(&AS_CLASS(superclass)->methods, &subclass->methods);
+                pop();
                 break;
             }
             case OP_METHOD:{
