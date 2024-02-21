@@ -225,3 +225,10 @@ SUPERCLASSES:
 1. we use the copy down method for inheritance, where we transfer all the methods of superclasses onto the subclass. 
 2. we first create the class OP_CLASS to create the class after which we invoke OP_INHERIT to transfer all the methods of superclass to the subclass. after this
 we use the OP_METHOD to invoke the methods of the subclass, so that if there are same methods, subclass's method overrides the superclass's methods.
+
+OPTIMIZATION:
+
+1. modulo operator is much slower than the other arithmetic operators.
+2. you can calculate a number modulo any power of two by simply AND-ing it with that power of two minus one.
+3. NaN boxing : within a single 64-bit double, you can store all of the different floating point numeric values, a pointer or any of a couple of other sentinel values.
+Half the memory usage of our current Value struct, while retaining all of the fidelity.

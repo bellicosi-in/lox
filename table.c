@@ -21,7 +21,7 @@ void freeTable(Table* table){
 
 //the function for finding a key value pair in the hash table or for finding a particular bucket to store that key value pair.
 static Entry* findEntry(Entry* entries,int capacity, ObjString* key){
-    uint32_t index = key->hash % capacity;
+    uint32_t index = key->hash & (capacity - 1);
     Entry* tombstone = NULL;
     for(;;){
         Entry* entry = &entries[index];
@@ -37,7 +37,7 @@ static Entry* findEntry(Entry* entries,int capacity, ObjString* key){
             //we found the key
             return entry;
         }
-        index=(index+1)%capacity;
+        index=(index+1) & (capacity - 1);
     }
 }
 
@@ -120,7 +120,7 @@ void tableAddAll(Table* from, Table* to) {
 ObjString* tableFindString(Table* table,const char* chars,int length,uint32_t hash){
     if(table->count==0) return NULL;
 
-    uint32_t index = hash % table->capacity;
+    uint32_t index = hash & (table->capacity - 1);
     for(;;){
         Entry* entry = &table->entries[index];
         if(entry->key==NULL){
@@ -129,7 +129,7 @@ ObjString* tableFindString(Table* table,const char* chars,int length,uint32_t ha
         } else if (entry->key->length == length && entry->key->hash == hash && memcmp(entry->key->chars,chars,length)==0){
             return entry->key;
         }
-        index = (index + 1)%table->capacity;
+        index = (index + 1) & (table->capacity-1);
     }
 }
 

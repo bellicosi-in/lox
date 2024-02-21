@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define NAN_BOXING
+
 // #define DEBUG_PRINT_CODE
 // #define DEBUG_TRACE_EXECUTION
 
